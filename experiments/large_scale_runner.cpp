@@ -1,8 +1,8 @@
 #include "../src/data_structures/graph.hpp"
 #include "../src/algorithms/kruskal.hpp"
 #include "../src/algorithms/prim.hpp"
-#include "../src/algorithms/prim_parallel.hpp"  
 #include "../src/algorithms/kkt.hpp"
+#include "../src/algorithms/boruvka_parallel.hpp"
 #include "../src/generators/graph_generator.hpp"
 #include <iostream>
 #include <fstream>
@@ -26,10 +26,10 @@ void runLargeScaleExperiments() {
     GraphGenerator generator(42);
     std::vector<std::unique_ptr<MSTAlgorithm>> algorithms;
     algorithms.push_back(std::make_unique<Kruskal>());
-    algorithms.push_back(std::make_unique<Prim>());  
-    algorithms.push_back(std::make_unique<PrimParallel>(2));  
-    algorithms.push_back(std::make_unique<PrimParallel>(4));  
+    algorithms.push_back(std::make_unique<Prim>());   
     algorithms.push_back(std::make_unique<KKT>());
+    algorithms.push_back(std::make_unique<BoruvkaParallel>(2));   
+    algorithms.push_back(std::make_unique<BoruvkaParallel>(4)); 
     std::vector<LargeExperiment> experiments;
     
     std::vector<int> sizes = {1000, 5000, 10000, 25000, 50000};

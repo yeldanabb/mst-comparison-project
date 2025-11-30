@@ -2,36 +2,42 @@
 #define KKT_HPP
 
 #include "mst_algorithm.hpp"
-#include "../data_structures/union_find.hpp"
-#include "../generators/graph_generator.hpp"
 #include <vector>
-#include <random>
-#include <algorithm>
+#include <tuple>
+#include <unordered_set>
+
+struct KKTProblem {
+    int num_vertices;
+    std::vector<std::tuple<int, int, double, int>> graph_edges; 
+    
+    KKTProblem(int nv = 0, std::vector<std::tuple<int, int, double, int>> ge = {}) 
+        : num_vertices(nv), graph_edges(ge) {}
+    
+    bool operator!=(const KKTProblem& rhs) const {
+        if (num_vertices != rhs.num_vertices) return true;
+        if (graph_edges.size() != rhs.graph_edges.size()) return true;
+        return false;
+    }
+};
+
 
 class KKT : public MSTAlgorithm {
 public:
     MSTResult solve(const Graph& graph) override;
-    std::string getName() const override { return "Karger-Klein-Tarjan"; }
+    std::string getName() const override { return "KKT"; }
     
 private:
-    std::vector<std::tuple<int, int, double>> kktRecursive(
-        const Graph& graph, 
-        UnionFind& uf,
-        std::mt19937& rng);
-
-    void boruvkaStep(
-        const Graph& graph, 
-        UnionFind& uf,
-        std::vector<std::tuple<int, int, double>>& mstEdges);
-    
-    Graph sampleGraph(const Graph& graph, double probability, std::mt19937& rng);
-    
-    void filterEdges(
-        const Graph& graph,
-        const std::vector<std::tuple<int, int, double>>& sampledMST,
-        std::vector<std::tuple<int, int, double>>& remainingEdges);
-    
-    Graph contractGraph(const Graph& graph, const UnionFind& uf);
+    std::unordered_set<int> kktAlgorithm(KKTProblem& P, unsigned int seed = 0);
+    std::pair<std::unordered_set<int>, KKTProblem> boruvkaStep(const KKTProblem& P);
+    KKTProblem removeIsolatedVertices(const KKTProblem& P);
+    KKTProblem randomSampling(const KKTProblem& P, unsigned int seed = 0);
+    std::unordered_set<int> findHeavyEdges(
+        const std::vector<std::tuple<int, int, double, int>>& graph,
+        const std::vector<std::tuple<int, int, double, int>>& forest,
+        int n);
+    int getSolutionCost(const KKTProblem& P, const std::unordered_set<int>& used);
+    std::vector<std::tuple<int, int, double, int>> getMSTEdgesFromProblem(
+        const std::unordered_set<int>& mst_id, const KKTProblem& P);
 };
 
 #endif

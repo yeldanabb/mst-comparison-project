@@ -2,7 +2,7 @@
 #include "../algorithms/kruskal.hpp"
 #include "../algorithms/prim.hpp"
 #include "../algorithms/kkt.hpp"  
-#include "../algorithms/prim_parallel.hpp"
+#include "../algorithms/boruvka_parallel.hpp"  
 #include "../generators/graph_generator.hpp"
 #include <iostream>
 #include <cassert>
@@ -64,27 +64,6 @@ void testPrimSmall() {
     std::cout << "Prim small test passed" << std::endl;
 }
 
-void testPrimParallel() {
-    Graph graph(4, false);
-    graph.addEdge(0, 1, 1.0);
-    graph.addEdge(1, 2, 2.0);
-    graph.addEdge(2, 3, 1.0);
-    graph.addEdge(0, 3, 3.0);
-    graph.addEdge(0, 2, 4.0);
-    
-    PrimParallel prim2(2);
-    PrimParallel prim4(4);
-    
-    MSTResult result2 = prim2.solve(graph);
-    MSTResult result4 = prim4.solve(graph);
-    
-    assert(result2.edges.size() == 3);
-    assert(result4.edges.size() == 3);
-    assert(std::abs(result2.totalWeight - 4.0) < 1e-9);
-    assert(std::abs(result4.totalWeight - 4.0) < 1e-9);
-    
-    std::cout << "Prim Parallel test passed" << std::endl;
-}
 
 void testKKTSmall() {
     Graph graph(4, false);
@@ -99,6 +78,21 @@ void testKKTSmall() {
     assert(result.edges.size() == 3);
     assert(std::abs(result.totalWeight - 4.0) < 1e-9); 
     std::cout << "KKT small test passed" << std::endl;
+}
+
+void testBoruvkaSmall() {
+    Graph graph(4, false);
+    graph.addEdge(0, 1, 1.0);
+    graph.addEdge(1, 2, 2.0);
+    graph.addEdge(2, 3, 1.0);
+    graph.addEdge(0, 3, 3.0);
+    graph.addEdge(0, 2, 4.0);
+    
+    BoruvkaParallel boruvka(2);  
+    MSTResult result = boruvka.solve(graph);
+    assert(result.edges.size() == 3);
+    assert(std::abs(result.totalWeight - 4.0) < 1e-9); 
+    std::cout << "Boruvka small test passed" << std::endl;
 }
 
 void testEdgeCases() {
@@ -123,20 +117,17 @@ void testAllAlgorithmConsistency() {
     
     Kruskal kruskal;
     Prim prim;  
-    PrimParallel primParallel2(2);
-    PrimParallel primParallel4(4);
     KKT kkt;
+    BoruvkaParallel boruvka(2); 
     
     MSTResult kruskalResult = kruskal.solve(graph);
     MSTResult primResult = prim.solve(graph);
-    MSTResult primParallel2Result = primParallel2.solve(graph);
-    MSTResult primParallel4Result = primParallel4.solve(graph);
     MSTResult kktResult = kkt.solve(graph);
+    MSTResult boruvkaResult = boruvka.solve(graph);
     
     assert(std::abs(kruskalResult.totalWeight - primResult.totalWeight) < 1e-9);
-    assert(std::abs(kruskalResult.totalWeight - primParallel2Result.totalWeight) < 1e-9);
-    assert(std::abs(kruskalResult.totalWeight - primParallel4Result.totalWeight) < 1e-9);
     assert(std::abs(kruskalResult.totalWeight - kktResult.totalWeight) < 1e-9);
+    assert(std::abs(kruskalResult.totalWeight - boruvkaResult.totalWeight) < 1e-9); 
     
     std::cout << "consistency test passed" << std::endl;
 }
@@ -158,21 +149,27 @@ void testPerformanceSmall() {
     
     Kruskal kruskal;
     Prim prim;
+    BoruvkaParallel boruvka2(2);   
+    BoruvkaParallel boruvka4(4);
+
     MSTResult kruskalResult = kruskal.solve(graph);
     MSTResult primResult = prim.solve(graph);
+    MSTResult boruvka2Result = boruvka2.solve(graph);
+    MSTResult boruvka4Result = boruvka4.solve(graph);
     
     std::cout << "Kruskal time: " << kruskalResult.executionTime << " ms" << std::endl;
     std::cout << "Prim time: " << primResult.executionTime << " ms" << std::endl;
-    std::cout << "Performance test completed" << std::endl;
+    std::cout << "Boruvka (2 threads) time: " << boruvka2Result.executionTime << " ms" << std::endl;
+    std::cout << "Boruvka (4 threads) time: " << boruvka4Result.executionTime << " ms" << std::endl;
 }
 
 void runAllTests() {
     testGraphBasic();
     testUnionFind();
     testKruskalSmall();
-    testPrimSmall();
-    testPrimParallel();  
+    testPrimSmall(); 
     testKKTSmall();
+    testBoruvkaSmall();
     testAllAlgorithmConsistency();  
     testGraphGenerator();
     testEdgeCases(); 

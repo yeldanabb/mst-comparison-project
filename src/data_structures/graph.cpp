@@ -4,7 +4,7 @@
 #include <queue>
 #include <iostream>
 
-Graph::Graph(int vertices, bool isDirected) : V(vertices), directed(isDirected) {
+Graph::Graph(int vertices, bool isDirected) : V(vertices), directed(isDirected), nextEdgeId(0) {
     adjList.resize(V);
 }
 
@@ -14,6 +14,29 @@ void Graph::addEdge(int u, int v, double weight) {
     }
     adjList[u].push_back({v, weight});
     edgeList.push_back({u, v, weight});
+    edgeListWithIds.push_back({u, v, weight, nextEdgeId});
+    idToEdgeMap[nextEdgeId] = {u, v, weight};
+    nextEdgeId++;
+    
+    if (!directed) {
+        adjList[v].push_back({u, weight});
+    }
+}
+
+void Graph::addEdgeWithId(int u, int v, double weight, int id) {
+    if (u < 0 || u >= V || v < 0 || v >= V) {
+        throw std::out_of_range("Vertex index out of bounds");
+    }
+
+    if (idToEdgeMap.find(id) != idToEdgeMap.end()) {
+        throw std::invalid_argument("Edge ID already exists");
+    }
+    adjList[u].push_back({v, weight});
+    edgeList.push_back({u, v, weight});
+    
+    edgeListWithIds.push_back({u, v, weight, id});
+    idToEdgeMap[id] = {u, v, weight};
+    nextEdgeId = std::max(nextEdgeId, id + 1); 
     if (!directed) {
         adjList[v].push_back({u, weight});
     }
@@ -30,7 +53,7 @@ Graph Graph::generateRandomGraph(int V, double density, double minWeight, double
     for (int i = 1; i < V; ++i) {
         int u = vertexDist(gen) % i;
         double weight = weightDist(gen);
-        graph.addEdge(u, i, weight);
+        graph.addEdge(u, i, weight); 
     }
     
     int currentEdges = V - 1;
@@ -47,7 +70,7 @@ Graph Graph::generateRandomGraph(int V, double density, double minWeight, double
             }
             if (!exists) {
                 double weight = weightDist(gen);
-                graph.addEdge(u, v, weight);
+                graph.addEdge(u, v, weight); 
                 currentEdges++;
             }
         }

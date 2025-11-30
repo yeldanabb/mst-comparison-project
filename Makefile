@@ -5,7 +5,7 @@ OBJDIR = obj
 BINDIR = bin
 
 CORE_SOURCES = $(wildcard $(SRCDIR)/data_structures/*.cpp)
-ALGO_SOURCES = $(SRCDIR)/algorithms/kruskal.cpp $(SRCDIR)/algorithms/prim.cpp $(SRCDIR)/algorithms/kkt.cpp $(SRCDIR)/algorithms/prim_parallel.cpp
+ALGO_SOURCES = $(SRCDIR)/algorithms/kruskal.cpp $(SRCDIR)/algorithms/prim.cpp $(SRCDIR)/algorithms/kkt.cpp  $(SRCDIR)/algorithms/verifier.cpp  $(SRCDIR)/algorithms/boruvka_parallel.cpp
 UTIL_SOURCES = $(wildcard $(SRCDIR)/utils/*.cpp)
 GENERATOR_SOURCES = $(wildcard $(SRCDIR)/generators/*.cpp)
 
@@ -15,9 +15,17 @@ OBJECTS = $(SOURCES:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
 TEST_SOURCES = $(SRCDIR)/tests/basic_tests.cpp
 TEST_OBJECTS = $(TEST_SOURCES:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
 
+VERIFIER_SRC = src/algorithms/verifier.cpp
+VERIFIER_OBJ = obj/algorithms/verifier.o
+
 SIMPLE_EXP_SOURCES = experiments/simple_runner.cpp
 SIMPLE_EXP_OBJECTS = $(SIMPLE_EXP_SOURCES:experiments/%.cpp=$(OBJDIR)/%.o)
 SIMPLE_EXP_TARGET = $(BINDIR)/simple_experiments
+
+KKTEX_EXP_SOURCES = experiments/kkt_runner.cpp
+KKTEX_EXP_OBJECTS = $(KKTEX_EXP_SOURCES:experiments/%.cpp=$(OBJDIR)/%.o)
+KKTEX_EXP_TARGET = $(BINDIR)/kkt_experiments
+
 
 LARGE_EXP_SOURCES = experiments/large_scale_runner.cpp
 LARGE_EXP_OBJECTS = $(LARGE_EXP_SOURCES:experiments/%.cpp=$(OBJDIR)/%.o)
@@ -29,14 +37,15 @@ COMPREHENSIVE_TARGET = $(BINDIR)/comprehensive_experiments
 
 TEST_TARGET = $(BINDIR)/run_tests
 
-.PHONY: all clean tests simple large comprehensive
+.PHONY: all clean tests simple large comprehensive kktex
 
-all: tests simple large comprehensive
+all: tests simple large comprehensive kktex
 
 tests: $(TEST_TARGET)
 
 simple: $(SIMPLE_EXP_TARGET)
 large: $(LARGE_EXP_TARGET)  
+kktex: $(KKTEX_EXP_TARGET)
 comprehensive: $(COMPREHENSIVE_TARGET)
 
 $(TEST_TARGET): $(OBJECTS) $(TEST_OBJECTS)
@@ -44,6 +53,10 @@ $(TEST_TARGET): $(OBJECTS) $(TEST_OBJECTS)
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
 $(SIMPLE_EXP_TARGET): $(OBJECTS) $(SIMPLE_EXP_OBJECTS)
+	@mkdir -p $(BINDIR)
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+$(KKTEX_EXP_TARGET): $(OBJECTS) $(KKTEX_EXP_OBJECTS)
 	@mkdir -p $(BINDIR)
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
@@ -64,7 +77,7 @@ $(OBJDIR)/%.o: experiments/%.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 debug: CXXFLAGS += -g -DDEBUG
-debug: $(TEST_TARGET) $(SIMPLE_EXP_TARGET) $(LARGE_EXP_TARGET) $(COMPREHENSIVE_TARGET)
+debug: $(TEST_TARGET) $(SIMPLE_EXP_TARGET) $(LARGE_EXP_TARGET) $(COMPREHENSIVE_TARGET) $(KKTEX_TARGET)
 
 clean:
 	rm -rf $(OBJDIR) $(BINDIR) *.csv *.png
@@ -73,4 +86,4 @@ graph: $(OBJDIR)/data_structures/graph.o
 kruskal: $(OBJDIR)/algorithms/kruskal.o
 prim: $(OBJDIR)/algorithms/prim.o
 kkt: $(OBJDIR)/algorithms/kkt.o
-prim_parallel: $(OBJDIR)/algorithms/prim_parallel.o
+boruvka_parallel: $(OBJDIR)/algorithms/boruvka_parallel.o

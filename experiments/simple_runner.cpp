@@ -1,9 +1,9 @@
 #include "../src/data_structures/graph.hpp"
 #include "../src/algorithms/kruskal.hpp"
 #include "../src/algorithms/prim.hpp"
-#include "../src/algorithms/prim_parallel.hpp" 
 #include "../src/generators/graph_generator.hpp"
 #include "../src/algorithms/kkt.hpp"  
+#include "../src/algorithms/boruvka_parallel.hpp"
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -25,9 +25,9 @@ void runSimpleExperiments() {
     
     algorithms.push_back(std::make_unique<Kruskal>());
     algorithms.push_back(std::make_unique<Prim>());  
-    algorithms.push_back(std::make_unique<PrimParallel>(2));  
-    algorithms.push_back(std::make_unique<PrimParallel>(4));  
     algorithms.push_back(std::make_unique<KKT>());
+    algorithms.push_back(std::make_unique<BoruvkaParallel>(2)); 
+    algorithms.push_back(std::make_unique<BoruvkaParallel>(4));
     
     std::vector<Experiment> experiments;
     std::vector<int> sizes = {100, 500, 1000, 2000};
